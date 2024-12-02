@@ -4,10 +4,19 @@
 
 using namespace sf;
 
+void Update(int &KeyTime,RectangleShape &square,RenderWindow &window);
+void Draw(RenderWindow &window,RectangleShape &square);
+
 int main()
 {
-    RenderWindow window(sf::VideoMode(640, 400), "Example 05",sf::Style::Default);
+    int keyTime = 8;
+    RenderWindow window(sf::VideoMode(640, 400), "Example 06",sf::Style::Default);
     window.setFramerateLimit(60);
+
+    RectangleShape square(Vector2f(100,100));
+    square.setFillColor(Color::Red);
+    square.setOrigin(50,50);
+    square.setPosition(window.getSize().x/2,window.getSize().y/2);
 
     while (window.isOpen())
     {
@@ -16,18 +25,58 @@ int main()
         {
             if (event.type == Event::Closed)
                 window.close();
-            if(event.type == Event::KeyPressed && event.key.code == Keyboard::Escape)
+            if(event.KeyPressed && event.key.code == Keyboard::Escape)
                 window.close();
-            if(event.type == Event::MouseButtonPressed && Mouse::isButtonPressed(Mouse::Left))
-                window.close();
+
         }
-        //Update
 
-        //Draw
-        window.clear();
+        Update(keyTime,square,window);
+        Draw(window,square);
 
-        window.display();
     }
 
     return 0;
+}
+
+void Update(int &KeyTime,RectangleShape &square,RenderWindow &window)
+{
+    int timeOut = 1;
+    if(KeyTime <timeOut)
+    {
+        KeyTime++;
+        return;
+    }
+    if(Keyboard::isKeyPressed(Keyboard::A) && square.getPosition().x>0)
+    {
+        square.move(-5,0);
+    }
+    if(Keyboard::isKeyPressed(Keyboard::D) && square.getPosition().x< window.getSize().x)
+    {
+        square.move(5,0);
+    }
+    if(Keyboard::isKeyPressed(Keyboard::W) && square.getPosition().y>0)
+    {
+        square.move(0,-5);
+    }
+    if(Keyboard::isKeyPressed(Keyboard::S) && square.getPosition().y< window.getSize().y)
+    {
+        square.move(0,5);
+    }
+
+    if(Mouse::isButtonPressed(Mouse::Left))
+    {
+        square.setFillColor(Color::Blue);
+    }else
+        square.setFillColor(Color::Red);
+
+    if(KeyTime>=timeOut)
+        KeyTime=0;
+
+}
+
+void Draw(RenderWindow &window,RectangleShape &square)
+{
+    window.clear();
+    window.draw(square);
+    window.display();
 }
