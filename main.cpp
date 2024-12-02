@@ -1,11 +1,13 @@
 #include <SFML/Graphics.hpp>
+#include <SFML/Window.hpp>
+#include <SFML/System.hpp>
 
 int main()
 {
-    sf::RenderWindow window(sf::VideoMode(200, 200), "SFML works!");
-    sf::CircleShape shape(100.f);
-    shape.setFillColor(sf::Color::Green);
+    sf::RenderWindow window(sf::VideoMode(640, 400), "Example 02",sf::Style::Default);
     window.setFramerateLimit(60);
+
+    sf::CircleShape shape(50.f);
 
     while (window.isOpen())
     {
@@ -15,8 +17,11 @@ int main()
             if (event.type == sf::Event::Closed)
                 window.close();
         }
+        //Update
+        shape.move(0.2f,0.f);
 
-        window.clear();
+        //Draw
+        window.clear(sf::Color::Red);
         window.draw(shape);
         window.display();
     }
