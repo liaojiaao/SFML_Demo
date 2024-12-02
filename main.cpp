@@ -2,13 +2,21 @@
 #include <SFML/Window.hpp>
 #include <SFML/System.hpp>
 
+using namespace sf;
+
 int main()
 {
     sf::RenderWindow window(sf::VideoMode(640, 400), "Example 02",sf::Style::Default);
     window.setFramerateLimit(60);
 
-    sf::CircleShape shape(50.f);
+    CircleShape circle(50.f);
+    RectangleShape rect(Vector2f(50.f,100.f));
 
+    circle.setPosition(Vector2f(0,0));
+    rect.setPosition(400,200);
+
+    circle.setFillColor(Color(255,100,200,200));
+    rect.setFillColor(Color(100,100,200,200));
     while (window.isOpen())
     {
         sf::Event event;
@@ -18,11 +26,15 @@ int main()
                 window.close();
         }
         //Update
-        shape.move(0.2f,0.f);
-
+        circle.move(0.5,0.2);
+        rect.move(-0.5,-0.2);
+        rect.rotate(5.f);
         //Draw
-        window.clear(sf::Color::Red);
-        window.draw(shape);
+        window.clear();
+
+        window.draw(circle);
+        window.draw(rect);
+
         window.display();
     }
 
