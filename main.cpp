@@ -6,34 +6,44 @@ using namespace sf;
 
 int main()
 {
-    sf::RenderWindow window(sf::VideoMode(640, 400), "Example 02",sf::Style::Default);
+    sf::RenderWindow window(sf::VideoMode(640, 400), "Example 04",sf::Style::Default);
     window.setFramerateLimit(60);
 
-    CircleShape circle(50.f);
-    RectangleShape rect(Vector2f(50.f,100.f));
+    CircleShape triangle;
+    triangle.setRadius(50);
+    triangle.setPointCount(3);
+    triangle.setFillColor(Color::Red);
+    triangle.setOutlineColor(Color::White);
+    triangle.setOutlineThickness(2);
 
-    circle.setPosition(Vector2f(0,0));
-    rect.setPosition(400,200);
+    Vertex line[] = {Vertex(Vector2f(100,400)),Vertex(Vector2f(50,100))};
 
-    circle.setFillColor(Color(255,100,200,200));
-    rect.setFillColor(Color(100,100,200,200));
+    ConvexShape convex;
+    convex.setPosition(400,200);
+    convex.setPointCount(5);
+    convex.setPoint(0,Vector2f(0,0));
+    convex.setPoint(1,Vector2f(100,0));
+    convex.setPoint(2,Vector2f(50,50));
+    convex.setPoint(3,Vector2f(100,100));
+    convex.setPoint(4,Vector2f(0,100));
+
+
     while (window.isOpen())
     {
-        sf::Event event;
+        Event event;
         while (window.pollEvent(event))
         {
             if (event.type == sf::Event::Closed)
                 window.close();
         }
         //Update
-        circle.move(0.5,0.2);
-        rect.move(-0.5,-0.2);
-        rect.rotate(5.f);
+
         //Draw
         window.clear();
 
-        window.draw(circle);
-        window.draw(rect);
+        window.draw(triangle);
+        window.draw(line,2,Lines);
+        window.draw(convex);
 
         window.display();
     }
