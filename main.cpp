@@ -25,7 +25,7 @@ int main()
         {
             if (event.type == Event::Closed)
                 window.close();
-            if(event.KeyPressed && event.key.code == Keyboard::Escape)
+            if(Keyboard::isKeyPressed(Keyboard::Escape))
                 window.close();
 
         }
