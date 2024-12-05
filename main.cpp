@@ -4,19 +4,33 @@
 
 using namespace sf;
 
-void Update(int &KeyTime,RectangleShape &square,RenderWindow &window);
-void Draw(RenderWindow &window,RectangleShape &square);
-
 int main()
 {
-    int keyTime = 8;
-    RenderWindow window(sf::VideoMode(640, 400), "Example 06",sf::Style::Default);
+
+    RenderWindow window(sf::VideoMode(640, 400), "Example 06", sf::Style::Default);
     window.setFramerateLimit(60);
 
-    RectangleShape square(Vector2f(100,100));
-    square.setFillColor(Color::Red);
-    square.setOrigin(50,50);
-    square.setPosition(window.getSize().x/2,window.getSize().y/2);
+    CircleShape hoop;
+    CircleShape ball;
+    int hoopDir = 0;
+    float hoopVcc = 1.5;
+    int mouseX = 0;
+    float ballY = 0;
+    float ballAcc = 5;
+    bool isShot = false;
+
+    hoop.setRadius(50);
+    hoop.setPosition(640 / 2.f, 60);
+    hoop.setOrigin(hoop.getRadius(), hoop.getRadius());
+    hoop.setFillColor(Color::Black);
+    hoop.setOutlineColor(Color::White);
+    hoop.setOutlineThickness(2.f);
+
+    ball.setRadius(30);
+    ball.setOrigin(ball.getRadius(), ball.getRadius());
+    ball.setFillColor(Color::Red);
+    ballY = window.getSize().y - ball.getRadius() * 2;
+    ball.setPosition(640 / 2.f, ballY);
 
     while (window.isOpen())
     {
@@ -25,58 +39,66 @@ int main()
         {
             if (event.type == Event::Closed)
                 window.close();
-            if(Keyboard::isKeyPressed(Keyboard::Escape))
+            if (Keyboard::isKeyPressed(Keyboard::Escape))
                 window.close();
-
+        }
+        // Update hoop
+        if (hoopDir == 0)
+        {
+            if (hoop.getPosition().x + hoopVcc < window.getSize().x - hoop.getRadius())
+            {
+                hoop.move(hoopVcc, 0);
+            }
+            else
+            {
+                hoopDir = 1;
+            }
+        }
+        else
+        {
+            if (hoop.getPosition().x - hoopVcc > hoop.getRadius())
+            {
+                hoop.move(-hoopVcc, 0);
+            }
+            else
+            {
+                hoopDir = 0;
+            }
         }
 
-        Update(keyTime,square,window);
-        Draw(window,square);
+        // update ball by mouse
+        if (Mouse::isButtonPressed(Mouse::Left))
+        {
+            isShot = true;
+        }
 
+        if (!isShot)
+        {
+            mouseX = Mouse::getPosition(window).x;
+
+            if (mouseX < ball.getRadius())
+                ball.setPosition(ball.getRadius(), ballY);
+            else if (mouseX > window.getSize().x - ball.getRadius())
+                ball.setPosition(window.getSize().x - ball.getRadius(), ballY);
+            else
+                ball.setPosition(mouseX, ballY);
+        }
+
+        if (isShot)
+        {
+            if (ball.getPosition().y < -(ball.getRadius() + 30) || ball.getGlobalBounds().intersects(hoop.getGlobalBounds()))
+            {
+                isShot = false;
+            }
+            ball.move(0, -ballAcc);
+        }
+
+        window.clear(Color(125, 200, 125, 200));
+        window.draw(hoop);
+        window.draw(ball);
+
+        window.display();
     }
 
     return 0;
-}
-
-void Update(int &KeyTime,RectangleShape &square,RenderWindow &window)
-{
-    int timeOut = 1;
-    if(KeyTime <timeOut)
-    {
-        KeyTime++;
-        return;
-    }
-    if(Keyboard::isKeyPressed(Keyboard::A) && square.getPosition().x>0)
-    {
-        square.move(-5,0);
-    }
-    if(Keyboard::isKeyPressed(Keyboard::D) && square.getPosition().x< window.getSize().x)
-    {
-        square.move(5,0);
-    }
-    if(Keyboard::isKeyPressed(Keyboard::W) && square.getPosition().y>0)
-    {
-        square.move(0,-5);
-    }
-    if(Keyboard::isKeyPressed(Keyboard::S) && square.getPosition().y< window.getSize().y)
-    {
-        square.move(0,5);
-    }
-
-    if(Mouse::isButtonPressed(Mouse::Left))
-    {
-        square.setFillColor(Color::Blue);
-    }else
-        square.setFillColor(Color::Red);
-
-    if(KeyTime>=timeOut)
-        KeyTime=0;
-
-}
-
-void Draw(RenderWindow &window,RectangleShape &square)
-{
-    window.clear();
-    window.draw(square);
-    window.display();
 }
