@@ -1,36 +1,44 @@
 #include <SFML/Graphics.hpp>
 #include <SFML/Window.hpp>
 #include <SFML/System.hpp>
+#include <vector>
+#include <ctime>
 
 using namespace sf;
 
 int main()
 {
+    srand(time(0));
 
-    RenderWindow window(sf::VideoMode(640, 400), "Example 06", sf::Style::Default);
+    RenderWindow window(sf::VideoMode(640, 480), "Ball Shooter", sf::Style::Default);
     window.setFramerateLimit(60);
 
-    CircleShape hoop;
-    CircleShape ball;
-    int hoopDir = 0;
-    float hoopVcc = 1.5;
-    int mouseX = 0;
-    float ballY = 0;
-    float ballAcc = 5;
-    bool isShot = false;
+    CircleShape bullet;
+    std::vector<CircleShape> vec_bullets;
+    RectangleShape enemy;
+    std::vector<RectangleShape> enemies;
+    CircleShape palyer;
 
-    hoop.setRadius(50);
-    hoop.setPosition(640 / 2.f, 60);
-    hoop.setOrigin(hoop.getRadius(), hoop.getRadius());
-    hoop.setFillColor(Color::Black);
-    hoop.setOutlineColor(Color::White);
-    hoop.setOutlineThickness(2.f);
+    int shootTimer = 0;
+    int bulletCold = 8;
+    int enemySpawnTimer = 0;
+    int enemyCold = 20;
+    float bulletVcc = 5;
+    float enemyVcc = 1;
+    ulong enemyCount = 8;
 
-    ball.setRadius(30);
-    ball.setOrigin(ball.getRadius(), ball.getRadius());
-    ball.setFillColor(Color::Red);
-    ballY = window.getSize().y - ball.getRadius() * 2;
-    ball.setPosition(640 / 2.f, ballY);
+    enemy.setFillColor(Color::Red);
+    enemy.setSize(Vector2f(40, 30));
+    enemy.setOrigin(enemy.getSize().x / 2.f, enemy.getSize().y / 2);
+
+    bullet.setRadius(10);
+    bullet.setFillColor(Color::Blue);
+    bullet.setOrigin(bullet.getRadius(), bullet.getRadius());
+
+    palyer.setFillColor(Color::Green);
+    palyer.setRadius(20);
+    palyer.setOrigin(palyer.getRadius(), palyer.getRadius());
+    palyer.setPosition(640 / 2.f, 450);
 
     while (window.isOpen())
     {
@@ -42,60 +50,83 @@ int main()
             if (Keyboard::isKeyPressed(Keyboard::Escape))
                 window.close();
         }
-        // Update hoop
-        if (hoopDir == 0)
+
+        // Update
+        // palyer
+        palyer.setPosition(Mouse::getPosition(window).x, palyer.getPosition().y);
+
+        if (Mouse::isButtonPressed(Mouse::Left) && shootTimer >= bulletCold)
         {
-            if (hoop.getPosition().x + hoopVcc < window.getSize().x - hoop.getRadius())
+            bullet.setPosition(palyer.getPosition());
+            vec_bullets.push_back(CircleShape(bullet));
+
+            shootTimer = 0;
+        }
+
+        // bullet
+        if (shootTimer < bulletCold)
+            shootTimer++;
+        for (size_t i = 0; i < vec_bullets.size(); i++)
+        {
+            vec_bullets[i].move(0, -bulletVcc);
+
+            if (vec_bullets[i].getPosition().y < -bullet.getRadius())
             {
-                hoop.move(hoopVcc, 0);
-            }
-            else
-            {
-                hoopDir = 1;
+                vec_bullets.erase(vec_bullets.begin() + i);
             }
         }
-        else
+
+        // enemy
+        if (enemySpawnTimer < enemyCold)
+            enemySpawnTimer++;
+
+        if (enemySpawnTimer >= enemyCold && enemies.size() < enemyCount)
         {
-            if (hoop.getPosition().x - hoopVcc > hoop.getRadius())
+            enemySpawnTimer = 0;
+            enemy.setPosition(rand() % (int)(window.getSize().x - enemy.getSize().x), -enemy.getSize().y);
+            enemies.push_back(RectangleShape(enemy));
+        }
+        for (size_t i = 0; i < enemies.size(); i++)
+        {
+            enemies[i].move(0, enemyVcc);
+
+            if (enemies[i].getPosition().y > palyer.getPosition().y + 10)
             {
-                hoop.move(-hoopVcc, 0);
+                enemies.erase(enemies.begin() + i);
             }
-            else
+        }
+
+        // collision
+        for (size_t i = 0; i < enemies.size(); i++)
+        {
+            if (i >= enemies.size())
+                break;
+            for (size_t j = 0; j < vec_bullets.size(); j++)
             {
-                hoopDir = 0;
+                if (vec_bullets[j].getGlobalBounds().intersects(enemies[i].getGlobalBounds()))
+                {
+                    vec_bullets.erase(vec_bullets.begin() + j);
+                    enemies.erase(enemies.begin() + i);
+
+                    break;
+                }
             }
         }
 
-        // update ball by mouse
-        if (Mouse::isButtonPressed(Mouse::Left))
-        {
-            isShot = true;
-        }
-
-        if (!isShot)
-        {
-            mouseX = Mouse::getPosition(window).x;
-
-            if (mouseX < ball.getRadius())
-                ball.setPosition(ball.getRadius(), ballY);
-            else if (mouseX > window.getSize().x - ball.getRadius())
-                ball.setPosition(window.getSize().x - ball.getRadius(), ballY);
-            else
-                ball.setPosition(mouseX, ballY);
-        }
-
-        if (isShot)
-        {
-            if (ball.getPosition().y < -(ball.getRadius() + 30) || ball.getGlobalBounds().intersects(hoop.getGlobalBounds()))
-            {
-                isShot = false;
-            }
-            ball.move(0, -ballAcc);
-        }
-
+        // Draw
         window.clear(Color(125, 200, 125, 200));
-        window.draw(hoop);
-        window.draw(ball);
+
+        for (size_t i = 0; i < enemies.size(); i++)
+        {
+            window.draw(enemies[i]);
+        }
+
+        for (size_t i = 0; i < vec_bullets.size(); i++)
+        {
+            window.draw(vec_bullets[i]);
+        }
+
+        window.draw(palyer);
 
         window.display();
     }
