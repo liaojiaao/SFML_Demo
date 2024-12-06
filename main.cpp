@@ -99,8 +99,6 @@ int main()
         // collision
         for (size_t i = 0; i < enemies.size(); i++)
         {
-            if (i >= enemies.size())
-                break;
             for (size_t j = 0; j < vec_bullets.size(); j++)
             {
                 if (vec_bullets[j].getGlobalBounds().intersects(enemies[i].getGlobalBounds()))
